@@ -1,0 +1,43 @@
+services:
+  openbao:
+    image: openbao-with-ui:latest  # Use the custom image
+    container_name: openbao
+    ports:
+      - "8200:8200"
+    volumes:
+      - ./config.hcl:/vault/config/config.hcl
+      - ./certs:/vault/config/certs
+      - openbao_data:/vault/data
+    environment:
+      - VAULT_ADDR=https://0.0.0.0:8200
+      - VAULT_API_ADDR=https://0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    networks:
+      - app_network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+    restart: unless-stopped
+
+volumes:
+  openbao_data:
+  postgres_data:
+
+networks:
+  app_network:
+    driver: bridge
