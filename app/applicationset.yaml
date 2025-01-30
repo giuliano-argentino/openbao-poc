@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: openbao-applicationset
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          # - environment: production
+          #   namespace: openbao-production
+          #   imageTag: stable
+          #   serviceType: LoadBalancer
+          #   persistenceSize: 10Gi
+          - environment: testing
+            namespace: openbao-testing
+            imageTag: latest
+            serviceType: ClusterIP
+            persistenceSize: 1Gi
+  template:
+    metadata:
+      name: openbao-{{ environment }}
+      labels:
+        environment: {{ environment }}
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/giuliano-argentino/openbao-poc.git
+        targetRevision: main
+        path: helm/openbao
+        helm:
+          values: |
+            openbao:
+              image:
+                tag: {{ imageTag }}
+              service:
+                type: {{ serviceType }}
+            postgresql:
+              persistence:
+                size: {{ persistenceSize }}
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: {{ namespace }}
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

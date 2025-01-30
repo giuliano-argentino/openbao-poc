@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "openbao.fullname" . }}-openbao
+  labels:
+    app: {{ include "openbao.fullname" . }}
+spec:
+  type: {{ .Values.openbao.service.type }}
+  ports:
+    - port: {{ .Values.openbao.service.port }}
+      targetPort: 8200
+  selector:
+    app: {{ include "openbao.fullname" . }}-openbao

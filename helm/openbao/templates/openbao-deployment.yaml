@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "openbao.fullname" . }}-openbao
+  labels:
+    app: {{ include "openbao.fullname" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "openbao.fullname" . }}-openbao
+  template:
+    metadata:
+      labels:
+        app: {{ include "openbao.fullname" . }}-openbao
+    spec:
+      containers:
+        - name: openbao
+          image: "{{ .Values.openbao.image.repository }}:{{ .Values.openbao.image.tag }}"
+          imagePullPolicy: {{ .Values.openbao.image.pullPolicy }}
+          ports:
+            - containerPort: 8200
+          volumeMounts:
+            - name: config
+              mountPath: /vault/config
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "openbao.fullname" . }}-config

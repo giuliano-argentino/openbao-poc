@@ -1,0 +1,35 @@
+# OpenBao Configuration
+openbao:
+  image:
+    repository: openbao-with-ui
+    tag: latest
+    pullPolicy: IfNotPresent
+  config:
+    hcl: |
+      ui = true
+      listener "tcp" {
+        address = "0.0.0.0:8200"
+        tls_disable = 1
+      }
+      storage "postgresql" {
+        connection_url = "postgres://{{ .Values.postgresql.username }}:{{ .Values.postgresql.password }}@{{ .Values.postgresql.service.name }}:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.database }}?sslmode=disable"
+      }
+  service:
+    type: ClusterIP
+    port: 8200
+
+# PostgreSQL Configuration
+postgresql:
+  image:
+    repository: postgres
+    tag: 13
+    pullPolicy: IfNotPresent
+  username: bao
+  password: bao-password
+  database: bao
+  service:
+    name: postgresql
+    port: 5432
+  persistence:
+    enabled: true
+    size: 1Gi
